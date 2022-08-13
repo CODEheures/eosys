@@ -1,51 +1,77 @@
-ORG 0
+ORG 0x7C00
 BITS 16
 
+CODE_SEG EQU GDT_CODE - GDT_START
+DATA_SEG EQU GDT_DATA - GDT_START
+
 JMP SHORT START
+NOP
 
 times 33 db 0
 
 
 START:
-    JMP 0x7C0:_start
+    JMP 0:_start
 
 _start:
     CLI
-    MOV ax, 0x7C0
+    MOV ax, 0
     MOV ds, ax
     MOV es, ax
-    MOV ax, 0x0
     MOV ss, ax
     MOV sp, 0x7C00
     STI
 
-    MOV si, message
-    CALL PRINT
+load_gdt:
+    CLI
+    LGDT[GDT_DESCRIPTOR]
+    MOV eax, cr0
+    OR eax, 0x1
+    MOV cr0, eax
 
+    JMP CODE_SEG:gdt_loaded
+
+
+; https://wiki.osdev.org/GDT_Tutorial
+; GDT 32-bit mode
+GDT_START:
+GDT_NULL:           ; 0x00
+    dd 0x00000000
+    dd 0x00000000
+GDT_CODE:           ; CS 0x08
+    dw 0xFFFF       ; Limit 0-15
+    dw 0x0000       ; Base 16-31
+    db 0x00         ; Base 32-39
+    db 0x9A         ; Access Byte 40-47
+    db 0xCF         ; Limit 48-51 Flag 52-55
+    db 0x00         ; Base 56-63
+GDT_DATA:           ; DS ES SS FS GS 0x10
+    dw 0xFFFF       ; Limit 0-15
+    dw 0x0000       ; Base 16-31
+    db 0x00         ; Base 32-39
+    db 0x92         ; Access Byte 40-47
+    db 0xCF         ; Limit 48-51 Flag 52-55
+    db 0x00         ; Base 56-63
+GDT_END:
+
+GDT_DESCRIPTOR:
+    dw GDT_END - GDT_START - 1
+    dd GDT_START
+
+[BITS 32]
+gdt_loaded:
+    MOV ax, DATA_SEG
+    MOV ds, eax
+    MOV es, eax
+    MOV ss, eax
+    MOV fs, eax
+    MOV gs, eax
+    MOV ebp, 0x00200000
+    MOV esp, ebp
     JMP $
 
-PRINT:
-    MOV bx, 0
-.begin_print:
-    MOV al, [si]
-    CMP al, 0
-    JE .end_print
-    CALL PRINT_CHAR
-    INC si
-    JMP .begin_print
 
-.end_print:
-    RET
-
-PRINT_CHAR:
-    MOV ah, 0Eh
-    INT 0x10
-    RET
-
-message: db 'Hello world!', 0
-
-
-times 510 -($ -$$) db 0
+times 510 -($ - $$) db 0
 
 db 0x55
 db 0xAA
