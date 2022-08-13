@@ -29,6 +29,12 @@ load_gdt:
     OR eax, 0x1
     MOV cr0, eax
 
+    ; Fast a20 line option 
+    ; https://wiki.osdev.org/A20_Line#Fast_A20_Gate
+    IN al, 0x92
+    OR al, 2
+    OUT 0x92, al
+
     JMP CODE_SEG:gdt_loaded
 
 
