@@ -1,5 +1,7 @@
 [BITS 32]
 
+section .asm
+
 global _start
 
 CODE_SEG EQU 0x08
@@ -22,3 +24,5 @@ _start:
     OUT 0x92, al
 
     JMP $
+
+times 512 -($ - $$) db 0
