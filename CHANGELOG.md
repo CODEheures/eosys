@@ -1,3 +1,6 @@
+# 0.3.1
+ - Align kernel
+
 # 0.3.0
 - Create kernel asm, link with ld and and compile with gcc
 - Adding kernel onto sector 2
