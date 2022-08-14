@@ -29,13 +29,7 @@ load_gdt:
     OR eax, 0x1
     MOV cr0, eax
 
-    ; Fast a20 line option 
-    ; https://wiki.osdev.org/A20_Line#Fast_A20_Gate
-    IN al, 0x92
-    OR al, 2
-    OUT 0x92, al
-
-    JMP CODE_SEG:gdt_loaded
+    JMP CODE_SEG:load32
 
 
 ; https://wiki.osdev.org/GDT_Tutorial
@@ -65,17 +59,15 @@ GDT_DESCRIPTOR:
     dd GDT_START
 
 [BITS 32]
-gdt_loaded:
-    MOV ax, DATA_SEG
-    MOV ds, eax
-    MOV es, eax
-    MOV ss, eax
-    MOV fs, eax
-    MOV gs, eax
-    MOV ebp, 0x00200000
-    MOV esp, ebp
-    JMP $
+load32:
+    MOV eax, 1
+    MOV ecx, 100
+    MOV edi, 0x0100000
+    CALL ata_lba_read
 
+    JMP CODE_SEG:0x0100000
+
+%include "./src/boot/ata_lba_read.asm"
 
 times 510 -($ - $$) db 0
 
