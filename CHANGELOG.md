@@ -1,3 +1,7 @@
+# 0.4.0
+ - Use extern kernel c file in kernel asm
+ - Update make file and improve start.sh for gdb
+
 # 0.3.1
  - Align kernel
 

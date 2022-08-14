@@ -1,8 +1,8 @@
 [BITS 32]
 
-section .asm
-
 global _start
+
+extern kernel_main
 
 CODE_SEG EQU 0x08
 DATA_SEG EQU 0x10
@@ -22,6 +22,8 @@ _start:
     IN al, 0x92
     OR al, 2
     OUT 0x92, al
+
+    CALL kernel_main
 
     JMP $
 
